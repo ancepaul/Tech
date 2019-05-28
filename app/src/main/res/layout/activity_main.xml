@@ -19,7 +19,7 @@
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:src="@drawable/ic_arrow_forward"
-        android:background="@drawable/circular_background"
+        android:background="@drawable/circular_background_yellow"
         android:tint="#ffffff"
         android:padding="5dp"
         android:layout_alignParentEnd="true"

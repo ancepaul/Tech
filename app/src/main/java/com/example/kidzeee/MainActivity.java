@@ -11,9 +11,11 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.LinearSnapHelper;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SnapHelper;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -34,6 +36,11 @@ public class MainActivity extends AppCompatActivity {
     private List<KidzeeModel> KidzeeList;
     private int CurrentItem=0;
     private TextToSpeech MainTextToSpeech;
+    private RecyclerView SingleItemCorrectRecyclerView,SingleItemJumbledRecyclerView;
+    private CorrectAdapter correctAdapter;
+    private Toast WrongToast;
+    private View WrongView;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,6 +96,10 @@ public class MainActivity extends AppCompatActivity {
         KidzeeAdapter adapter = new KidzeeAdapter();
         MainRecyclerview.setAdapter(adapter);
 
+        WrongToast = new Toast(this);
+        WrongView = LayoutInflater.from(getApplicationContext()).inflate(R.layout.wrong_view_layout,null);
+        WrongToast.setView(WrongView);
+        WrongToast.setGravity(Gravity.CENTER,0,0);
     }
 
     public class KidzeeeLinearManager extends LinearLayoutManager
@@ -117,7 +128,11 @@ public class MainActivity extends AppCompatActivity {
         public void onBindViewHolder(@NonNull KidzeeViewHolder kidzeeViewHolder, int i) {
 
             Glide.with(getApplicationContext()).load(KidzeeList.get(i).getImageUri()).into(kidzeeViewHolder.SingleItemImageView);
-            kidzeeViewHolder.SingleItemRecyclerView.setAdapter(new SingleKidzeeAdapter(KidzeeList.get(i).getOrgName(),GenerateRandomString(KidzeeList.get(i).getOrgName())));
+            SingleItemJumbledRecyclerView.setAdapter(new SingleKidzeeAdapter(KidzeeList.get(i).getOrgName(),GenerateRandomString(KidzeeList.get(i).getOrgName())));
+            correctAdapter= new CorrectAdapter(KidzeeList.get(i).getOrgName(),0);
+            correctAdapter.notifyDataSetChanged();
+            SingleItemCorrectRecyclerView.setAdapter(correctAdapter);
+
         }
 
         @Override
@@ -129,18 +144,26 @@ public class MainActivity extends AppCompatActivity {
         public class KidzeeViewHolder extends RecyclerView.ViewHolder {
 
             ImageView SingleItemImageView;
-            RecyclerView SingleItemRecyclerView;
 
             public KidzeeViewHolder(@NonNull View itemView) {
                 super(itemView);
 
                 SingleItemImageView = itemView.findViewById(R.id.single_item_imageview);
-                SingleItemRecyclerView = itemView.findViewById(R.id.single_item_reyclerview);
-                SingleItemRecyclerView.setHasFixedSize(true);
-                SingleItemRecyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext(),LinearLayoutManager.HORIZONTAL,false));
+
+                SingleItemJumbledRecyclerView = itemView.findViewById(R.id.single_item_jumbled_reyclerview);
+                SingleItemJumbledRecyclerView.setHasFixedSize(true);
+                SingleItemJumbledRecyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext(),LinearLayoutManager.HORIZONTAL,false));
+
+                SingleItemCorrectRecyclerView = itemView.findViewById(R.id.single_item_correct_reyclerview);
+                SingleItemCorrectRecyclerView.setHasFixedSize(true);
+                SingleItemCorrectRecyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext(),LinearLayoutManager.HORIZONTAL,false));
+
+
             }
         }
     }
+
+
 
     private String GenerateRandomString(String orgName) {
 
@@ -204,17 +227,32 @@ public class MainActivity extends AppCompatActivity {
 
                     if(ch==(OrgString.charAt(count)))
                     {
+                        if(WrongView.isShown())
+                        {
+                            WrongView.setVisibility(View.GONE);
+                        }
                         count++;
                         singleKidzeeViewholder.SingleItem.setVisibility(View.GONE);
-                        Toast.makeText(getApplicationContext(),singleKidzeeViewholder.SingleItem.getText(),Toast.LENGTH_SHORT).show();
                         MainTextToSpeech.speak(String.valueOf(ch),TextToSpeech.QUEUE_ADD,null);
+                        correctAdapter= new CorrectAdapter(OrgString,count);
+                        correctAdapter.notifyDataSetChanged();
+                        SingleItemCorrectRecyclerView.setAdapter(correctAdapter);
+
+
+                    }
+                    else
+                    {
+                        ShowCustomToast(0);
+                        MainTextToSpeech.speak("Wrong",TextToSpeech.QUEUE_ADD,null);
                     }
 
                     if(count==OrgString.length())
                     {
-                        Toast.makeText(getApplicationContext(),"Yehhh : "+OrgString,Toast.LENGTH_SHORT).show();
                         MainTextToSpeech.speak(OrgString,TextToSpeech.QUEUE_ADD,null);
-
+                        SingleItemJumbledRecyclerView.clearAnimation();
+                        SingleItemJumbledRecyclerView.setAnimation(AnimationUtils.loadAnimation(getApplicationContext(),android.R.anim.fade_out));
+                        SingleItemJumbledRecyclerView.getAnimation().start();
+                        SingleItemJumbledRecyclerView.setVisibility(View.INVISIBLE);
                     }
 
 
@@ -240,6 +278,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void ShowCustomToast(int i) {
+
+        WrongView.setVisibility(View.VISIBLE);
+        WrongToast.setDuration(i);
+        WrongToast.show();
+    }
+
 
     @Override
     protected void onDestroy() {
@@ -250,5 +295,55 @@ public class MainActivity extends AppCompatActivity {
             MainTextToSpeech.shutdown();
         }
         super.onDestroy();
+    }
+
+    private class CorrectAdapter extends RecyclerView.Adapter<CorrectAdapter.CorrectViewholder> {
+
+        String CorrectString;
+        int correctlength;
+
+        public CorrectAdapter(String correctString, int correctlength) {
+            CorrectString = correctString;
+            this.correctlength = correctlength;
+        }
+
+        @NonNull
+        @Override
+        public CorrectViewholder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
+            return new CorrectAdapter.CorrectViewholder(LayoutInflater.from(getApplicationContext()).inflate(R.layout.single_item_layout_button,viewGroup,false));
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull CorrectViewholder correctViewholder, int i) {
+
+            if(correctlength>i)
+            {
+                correctViewholder.OrgButton.setText(String.valueOf(CorrectString.charAt(i)));
+                correctViewholder.OrgButton.setBackgroundResource(R.drawable.circular_background_green);
+            }
+            else
+            {
+                correctViewholder.OrgButton.setText("_");
+                correctViewholder.OrgButton.setBackgroundResource(R.drawable.circular_background_red);
+
+            }
+
+        }
+
+        @Override
+        public int getItemCount() {
+            return CorrectString.length();
+        }
+
+        public class CorrectViewholder extends RecyclerView.ViewHolder {
+
+            Button OrgButton;
+
+            public CorrectViewholder(@NonNull View itemView) {
+                super(itemView);
+
+                OrgButton = itemView.findViewById(R.id.single_item_button);
+            }
+        }
     }
 }

@@ -1,8 +1,11 @@
 package com.example.kidzeee;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.speech.tts.TextToSpeech;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -22,6 +25,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.crowdfire.cfalertdialog.CFAlertDialog;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
         KidzeeList = new ArrayList<>();
 
         CurrentItem=0;
-        fruitList();
+        animalList();
         LoadFirstItem();
 
         MainNextButton.setOnClickListener(new View.OnClickListener() {
@@ -121,22 +125,56 @@ public class MainActivity extends AppCompatActivity {
         WrongView = LayoutInflater.from(getApplicationContext()).inflate(R.layout.wrong_view_layout,null);
         WrongToast.setView(WrongView);
         WrongToast.setGravity(Gravity.CENTER,0,0);
+
+       findViewById(R.id.selectItem).setOnClickListener(new View.OnClickListener() {
+           @Override
+           public void onClick(View v) {
+                 showDialogue();
+           }
+       });
+
+         if(isConnectedToNet()){
+
+         }else{
+             CFAlertDialog.Builder builder = new CFAlertDialog.Builder(MainActivity.this)
+                     .setDialogStyle(CFAlertDialog.CFAlertStyle.BOTTOM_SHEET)
+                     .setTitle("No internet ")
+                     .setMessage("No internet. Please turn it ON")
+                     .setDialogBackgroundColor(MainActivity.this.getResources().getColor(R.color.cfdialog_button_white_text_color))
+                     .setIcon(R.drawable.ic_cancel_black_24dp)
+                     .addButton("  CANCEL ", -1, Color.RED,
+                             CFAlertDialog.CFAlertActionStyle.POSITIVE, CFAlertDialog.CFAlertActionAlignment.CENTER, new DialogInterface.OnClickListener() {
+                         @Override
+                         public void onClick(DialogInterface dialog, int which) {
+                             dialog.dismiss();
+                         }
+                     });
+
+             builder.show();
+
+
+         }
+
+
+
+
     }
 
     private void LoadFirstItem() {
+           Glide.with(getApplicationContext()).load(KidzeeList.get(CurrentItem).getImageUri()).into(SingleItemImageView);
 
-        Glide.with(getApplicationContext()).load(KidzeeList.get(CurrentItem).getImageUri()).into(SingleItemImageView);
+           singleKidzeeAdapter = new SingleKidzeeAdapter(KidzeeList.get(CurrentItem).getOrgName(),GenerateRandomString(KidzeeList.get(CurrentItem).getOrgName()));
+           singleKidzeeAdapter.notifyDataSetChanged();
+           SingleItemJumbledRecyclerView.setAdapter(singleKidzeeAdapter);
 
-        singleKidzeeAdapter = new SingleKidzeeAdapter(KidzeeList.get(CurrentItem).getOrgName(),GenerateRandomString(KidzeeList.get(CurrentItem).getOrgName()));
-        singleKidzeeAdapter.notifyDataSetChanged();
-        SingleItemJumbledRecyclerView.setAdapter(singleKidzeeAdapter);
-
-        correctAdapter= new CorrectAdapter(KidzeeList.get(CurrentItem).getOrgName(),0);
-        correctAdapter.notifyDataSetChanged();
-        SingleItemCorrectRecyclerView.setAdapter(correctAdapter);
+           correctAdapter= new CorrectAdapter(KidzeeList.get(CurrentItem).getOrgName(),0);
+           correctAdapter.notifyDataSetChanged();
+           SingleItemCorrectRecyclerView.setAdapter(correctAdapter);
     }
 
     private void fruitList() {
+        CurrentItem=0;
+        KidzeeList.clear();
         KidzeeList.add(new KidzeeModel("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSYP3GJ7QuLRvmuh-agl1sXHtMZ1VQwWKwxADnICJDaeiYPUqv_","MANGO"));
         KidzeeList.add(new KidzeeModel("https://5.imimg.com/data5/WA/US/MY-18632401/apple-fruit-500x500.jpg","APPLE"));
         KidzeeList.add(new KidzeeModel("https://images-na.ssl-images-amazon.com/images/I/81WJyO53YAL._SY550_.jpg","PINEAPPLE"));
@@ -146,11 +184,34 @@ public class MainActivity extends AppCompatActivity {
         KidzeeList.add(new KidzeeModel("https://cdn.medusajuice.co.uk/wp-content/uploads/2017/12/peach-e-liquid.png","PEACH"));
         KidzeeList.add(new KidzeeModel("http://www.zarat.kp.gov.pk/assets/uploads/crops/a2237670547780096024583f333bcefd.jpeg","CARROT"));
         KidzeeList.add(new KidzeeModel("https://balidirectstore.com/app/uploads/2018/04/Fresh-lemons-on-the-rustic-tale-640x360.jpg","LEMON"));
-        KidzeeList.add(new KidzeeModel("https://5.imimg.com/data5/RA/LA/MY-46372253/guava-2fperu-500x500.png","GUAVA"));
+        LoadFirstItem();
     }
 
 
+    private void animalList(){
+        KidzeeList.clear();
+        CurrentItem=0;
+        KidzeeList.add(new KidzeeModel("https://upload.wikimedia.org/wikipedia/commons/7/73/Lion_waiting_in_Namibia.jpg", "LION"));
+        KidzeeList.add(new KidzeeModel("https://upload.wikimedia.org/wikipedia/commons/8/81/2012_Suedchinesischer_Tiger.JPG","TIGER"));
+        KidzeeList.add(new KidzeeModel("https://upload.wikimedia.org/wikipedia/commons/b/b2/Hausziege_04.jpg","GOAT"));
+        KidzeeList.add(new KidzeeModel("https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Cow_female_black_white.jpg/1200px-Cow_female_black_white.jpg","COW"));
+        KidzeeList.add(new KidzeeModel("https://upload.wikimedia.org/wikipedia/commons/1/11/Cheetah_Kruger.jpg","CHEETAH"));
+        KidzeeList.add(new KidzeeModel("https://upload.wikimedia.org/wikipedia/commons/0/07/Giraffe08_-_melbourne_zoo.jpg","GIRAFFE"));
+        KidzeeList.add(new KidzeeModel("https://upload.wikimedia.org/wikipedia/commons/b/b7/White-tailed_deer.jpg","DEER"));
+        KidzeeList.add(new KidzeeModel("https://upload.wikimedia.org/wikipedia/commons/4/4e/Macaca_nigra_self-portrait_large.jpg","MONKEY"));
+        KidzeeList.add(new KidzeeModel("https://upload.wikimedia.org/wikipedia/commons/e/ed/Water-buffalo.jpg","BUFFALO"));
+        LoadFirstItem();
+    }
 
+    public boolean isConnectedToNet() {
+
+        ConnectivityManager connectivityManager =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        return connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
+                connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED;
+
+
+    }
 
     private String GenerateRandomString(String orgName) {
 
@@ -343,4 +404,46 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
+   public void showDialogue(){
+       CFAlertDialog.Builder builder = new CFAlertDialog.Builder(MainActivity.this)
+               .setDialogStyle(CFAlertDialog.CFAlertStyle.BOTTOM_SHEET)
+               .setTitle("Choose your item")
+               .setSingleChoiceItems(new String[]{"Animals",
+                       "Fruits",}, 2, new DialogInterface.OnClickListener() {
+                   @Override
+                   public void onClick(DialogInterface dialogInterface, int i) {
+                       switch (i){
+                           case 0:
+                               animalList();
+                               dialogInterface.dismiss();
+
+
+                               break;
+
+                           case 1:
+                               fruitList();
+                               dialogInterface.dismiss();
+
+                               break;
+
+                       }
+
+                   }
+               })
+               .setDialogBackgroundColor(MainActivity.this.getResources().getColor(R.color.cfdialog_button_white_text_color))
+               .setIcon(R.drawable.ic_check_circle_black_24dp)
+               .addButton("  CANCEL ", -1, Color.BLUE, CFAlertDialog.CFAlertActionStyle.POSITIVE, CFAlertDialog.CFAlertActionAlignment.CENTER, new DialogInterface.OnClickListener() {
+                   @Override
+                   public void onClick(DialogInterface dialog, int which) {
+                       dialog.dismiss();
+                   }
+               });
+
+       builder.show();
+
+
+
+
+   }
 }

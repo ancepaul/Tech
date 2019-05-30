@@ -30,16 +30,17 @@ import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
 
-    private RecyclerView MainRecyclerview;
-    private KidzeeeLinearManager LayoutManager;
     private ImageButton MainNextButton ;
     private List<KidzeeModel> KidzeeList;
-    private int CurrentItem=0;
+    private static int CurrentItem=0;
     private TextToSpeech MainTextToSpeech;
     private RecyclerView SingleItemCorrectRecyclerView,SingleItemJumbledRecyclerView;
     private CorrectAdapter correctAdapter;
     private Toast WrongToast;
     private View WrongView;
+    private SingleKidzeeAdapter singleKidzeeAdapter;
+    private ImageView SingleItemImageView;
+
 
 
     @Override
@@ -48,26 +49,50 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
-        MainRecyclerview = findViewById(R.id.main_recyclerview);
-        MainRecyclerview.setHasFixedSize(true);
-        LayoutManager = new KidzeeeLinearManager(this,LinearLayoutManager.HORIZONTAL,false);
-        MainRecyclerview.setLayoutManager(LayoutManager);
         MainNextButton = findViewById(R.id.main_next_button);
+        SingleItemImageView = findViewById(R.id.single_item_imageview);
+
+        SingleItemJumbledRecyclerView = findViewById(R.id.single_item_jumbled_reyclerview);
+        SingleItemJumbledRecyclerView.setHasFixedSize(true);
+        SingleItemJumbledRecyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext(),LinearLayoutManager.HORIZONTAL,false));
+
+        SingleItemCorrectRecyclerView = findViewById(R.id.single_item_correct_reyclerview);
+        SingleItemCorrectRecyclerView.setHasFixedSize(true);
+        SingleItemCorrectRecyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext(),LinearLayoutManager.HORIZONTAL,false));
 
         KidzeeList = new ArrayList<>();
 
-
+        CurrentItem=0;
         fruitList();
+        LoadFirstItem();
 
         MainNextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-               if(CurrentItem < KidzeeList.size())
-               {
-                   CurrentItem++;
-                   MainRecyclerview.scrollToPosition(CurrentItem);
-               }
+                if(CurrentItem < KidzeeList.size())
+                {
+                    try
+                    {
+                        CurrentItem++;
+                        Glide.with(getApplicationContext()).load(KidzeeList.get(CurrentItem).getImageUri()).into(SingleItemImageView);
+
+                        singleKidzeeAdapter = new SingleKidzeeAdapter(KidzeeList.get(CurrentItem).getOrgName(),GenerateRandomString(KidzeeList.get(CurrentItem).getOrgName()));
+                        singleKidzeeAdapter.notifyDataSetChanged();
+                        SingleItemJumbledRecyclerView.setAdapter(singleKidzeeAdapter);
+
+                        correctAdapter= new CorrectAdapter(KidzeeList.get(CurrentItem).getOrgName(),0);
+                        correctAdapter.notifyDataSetChanged();
+                        SingleItemCorrectRecyclerView.setAdapter(correctAdapter);
+                    }
+                    catch (IndexOutOfBoundsException e)
+                    {
+                        Toast.makeText(getApplicationContext(),"Last item reached",Toast.LENGTH_SHORT).show();
+                    }
+
+
+                }
+
             }
         });
 
@@ -91,13 +116,24 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        KidzeeAdapter adapter = new KidzeeAdapter();
-        MainRecyclerview.setAdapter(adapter);
 
         WrongToast = new Toast(this);
         WrongView = LayoutInflater.from(getApplicationContext()).inflate(R.layout.wrong_view_layout,null);
         WrongToast.setView(WrongView);
         WrongToast.setGravity(Gravity.CENTER,0,0);
+    }
+
+    private void LoadFirstItem() {
+
+        Glide.with(getApplicationContext()).load(KidzeeList.get(CurrentItem).getImageUri()).into(SingleItemImageView);
+
+        singleKidzeeAdapter = new SingleKidzeeAdapter(KidzeeList.get(CurrentItem).getOrgName(),GenerateRandomString(KidzeeList.get(CurrentItem).getOrgName()));
+        singleKidzeeAdapter.notifyDataSetChanged();
+        SingleItemJumbledRecyclerView.setAdapter(singleKidzeeAdapter);
+
+        correctAdapter= new CorrectAdapter(KidzeeList.get(CurrentItem).getOrgName(),0);
+        correctAdapter.notifyDataSetChanged();
+        SingleItemCorrectRecyclerView.setAdapter(correctAdapter);
     }
 
     private void fruitList() {
@@ -109,72 +145,10 @@ public class MainActivity extends AppCompatActivity {
         KidzeeList.add(new KidzeeModel("https://ae.pricenacdn.com/files/images/products/original/933/Banana-Yellow-India-1kg-Approx-Weight_11074279_032b1d60acc6d81ec479d6a6dd68b825_t.jpg","BANANA"));
         KidzeeList.add(new KidzeeModel("https://cdn.medusajuice.co.uk/wp-content/uploads/2017/12/peach-e-liquid.png","PEACH"));
         KidzeeList.add(new KidzeeModel("http://www.zarat.kp.gov.pk/assets/uploads/crops/a2237670547780096024583f333bcefd.jpeg","CARROT"));
-        KidzeeList.add(new KidzeeModel("https://balidirectstore" +
-                ".com/app/uploads/2018/04/Fresh-lemons-on-the-rustic-tale-640x360.jpg","LEMON"));
-        KidzeeList.add(new KidzeeModel("https://5.imimg.com/data5/RA/LA/MY-46372253/guava-2fperu" +
-                "-500x500.png","GUAVA"));
+        KidzeeList.add(new KidzeeModel("https://balidirectstore.com/app/uploads/2018/04/Fresh-lemons-on-the-rustic-tale-640x360.jpg","LEMON"));
+        KidzeeList.add(new KidzeeModel("https://5.imimg.com/data5/RA/LA/MY-46372253/guava-2fperu-500x500.png","GUAVA"));
     }
 
-    public class KidzeeeLinearManager extends LinearLayoutManager
-    {
-
-        public KidzeeeLinearManager(Context context, int orientation, boolean reverseLayout) {
-            super(context, orientation, reverseLayout);
-        }
-
-        @Override
-        public boolean canScrollHorizontally() {
-            return false;
-        }
-    }
-
-    public class KidzeeAdapter extends RecyclerView.Adapter<KidzeeAdapter.KidzeeViewHolder>
-    {
-
-        @NonNull
-        @Override
-        public KidzeeViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
-            return new KidzeeAdapter.KidzeeViewHolder(LayoutInflater.from(getApplicationContext()).inflate(R.layout.single_item_layout,viewGroup,false));
-        }
-
-        @Override
-        public void onBindViewHolder(@NonNull KidzeeViewHolder kidzeeViewHolder, int i) {
-
-            Glide.with(getApplicationContext()).load(KidzeeList.get(i).getImageUri()).into(kidzeeViewHolder.SingleItemImageView);
-            SingleItemJumbledRecyclerView.setAdapter(new SingleKidzeeAdapter(KidzeeList.get(i).getOrgName(),GenerateRandomString(KidzeeList.get(i).getOrgName())));
-            correctAdapter= new CorrectAdapter(KidzeeList.get(i).getOrgName(),0);
-            correctAdapter.notifyDataSetChanged();
-            SingleItemCorrectRecyclerView.setAdapter(correctAdapter);
-
-        }
-
-        @Override
-        public int getItemCount() {
-            return KidzeeList.size();
-        }
-
-
-        public class KidzeeViewHolder extends RecyclerView.ViewHolder {
-
-            ImageView SingleItemImageView;
-
-            public KidzeeViewHolder(@NonNull View itemView) {
-                super(itemView);
-
-                SingleItemImageView = itemView.findViewById(R.id.single_item_imageview);
-
-                SingleItemJumbledRecyclerView = itemView.findViewById(R.id.single_item_jumbled_reyclerview);
-                SingleItemJumbledRecyclerView.setHasFixedSize(true);
-                SingleItemJumbledRecyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext(),LinearLayoutManager.HORIZONTAL,false));
-
-                SingleItemCorrectRecyclerView = itemView.findViewById(R.id.single_item_correct_reyclerview);
-                SingleItemCorrectRecyclerView.setHasFixedSize(true);
-                SingleItemCorrectRecyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext(),LinearLayoutManager.HORIZONTAL,false));
-
-
-            }
-        }
-    }
 
 
 
@@ -216,10 +190,13 @@ public class MainActivity extends AppCompatActivity {
     {
         String OrgString;
         String RandomString;
-        int count=0;
+        int count;
+
         public SingleKidzeeAdapter(String orgString, String o) {
+
             OrgString = orgString;
             RandomString= o;
+            count=0;
         }
 
         @NonNull
@@ -231,8 +208,10 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolder(@NonNull final SingleKidzeeViewholder singleKidzeeViewholder, final int i) {
 
+
             final char ch = RandomString.charAt(i);
             singleKidzeeViewholder.SingleItem.setText(String.valueOf(ch));
+            SingleItemJumbledRecyclerView.setVisibility(View.VISIBLE);
 
             singleKidzeeViewholder.SingleItem.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -240,11 +219,14 @@ public class MainActivity extends AppCompatActivity {
 
                     if(ch==(OrgString.charAt(count)))
                     {
+
+
                         if(WrongView.isShown())
                         {
                             WrongView.setVisibility(View.GONE);
                         }
                         count++;
+
                         singleKidzeeViewholder.SingleItem.setVisibility(View.GONE);
                         MainTextToSpeech.speak(String.valueOf(ch),TextToSpeech.QUEUE_ADD,null);
                         correctAdapter= new CorrectAdapter(OrgString,count);
@@ -276,6 +258,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public int getItemCount() {
+
             return RandomString.length();
         }
 
@@ -345,6 +328,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public int getItemCount() {
+
             return CorrectString.length();
         }
 

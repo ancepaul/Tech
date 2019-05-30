@@ -55,11 +55,9 @@ public class MainActivity extends AppCompatActivity {
         MainNextButton = findViewById(R.id.main_next_button);
 
         KidzeeList = new ArrayList<>();
-        KidzeeList.add(new KidzeeModel("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSYP3GJ7QuLRvmuh-agl1sXHtMZ1VQwWKwxADnICJDaeiYPUqv_","MANGO"));
-        KidzeeList.add(new KidzeeModel("https://5.imimg.com/data5/WA/US/MY-18632401/apple-fruit-500x500.jpg","APPLE"));
-        KidzeeList.add(new KidzeeModel("https://images-na.ssl-images-amazon.com/images/I/81WJyO53YAL._SY550_.jpg","PINEAPPLE"));
-        KidzeeList.add(new KidzeeModel("https://previews.123rf.com/images/utima/utima1202/utima120200025/12521354-wet-orange-fruit-with-leaves-isolated-on-white.jpg","ORANGE"));
-        KidzeeList.add(new KidzeeModel("https://i5.walmartimages.ca/images/Large/463/3_r/6000191284633_R.jpg","WATERMELON"));
+
+
+        fruitList();
 
         MainNextButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -100,6 +98,21 @@ public class MainActivity extends AppCompatActivity {
         WrongView = LayoutInflater.from(getApplicationContext()).inflate(R.layout.wrong_view_layout,null);
         WrongToast.setView(WrongView);
         WrongToast.setGravity(Gravity.CENTER,0,0);
+    }
+
+    private void fruitList() {
+        KidzeeList.add(new KidzeeModel("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSYP3GJ7QuLRvmuh-agl1sXHtMZ1VQwWKwxADnICJDaeiYPUqv_","MANGO"));
+        KidzeeList.add(new KidzeeModel("https://5.imimg.com/data5/WA/US/MY-18632401/apple-fruit-500x500.jpg","APPLE"));
+        KidzeeList.add(new KidzeeModel("https://images-na.ssl-images-amazon.com/images/I/81WJyO53YAL._SY550_.jpg","PINEAPPLE"));
+        KidzeeList.add(new KidzeeModel("https://previews.123rf.com/images/utima/utima1202/utima120200025/12521354-wet-orange-fruit-with-leaves-isolated-on-white.jpg","ORANGE"));
+        KidzeeList.add(new KidzeeModel("https://i5.walmartimages.ca/images/Large/463/3_r/6000191284633_R.jpg","WATERMELON"));
+        KidzeeList.add(new KidzeeModel("https://ae.pricenacdn.com/files/images/products/original/933/Banana-Yellow-India-1kg-Approx-Weight_11074279_032b1d60acc6d81ec479d6a6dd68b825_t.jpg","BANANA"));
+        KidzeeList.add(new KidzeeModel("https://cdn.medusajuice.co.uk/wp-content/uploads/2017/12/peach-e-liquid.png","PEACH"));
+        KidzeeList.add(new KidzeeModel("http://www.zarat.kp.gov.pk/assets/uploads/crops/a2237670547780096024583f333bcefd.jpeg","CARROT"));
+        KidzeeList.add(new KidzeeModel("https://balidirectstore" +
+                ".com/app/uploads/2018/04/Fresh-lemons-on-the-rustic-tale-640x360.jpg","LEMON"));
+        KidzeeList.add(new KidzeeModel("https://5.imimg.com/data5/RA/LA/MY-46372253/guava-2fperu" +
+                "-500x500.png","GUAVA"));
     }
 
     public class KidzeeeLinearManager extends LinearLayoutManager

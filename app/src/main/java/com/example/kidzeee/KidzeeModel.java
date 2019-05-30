@@ -9,7 +9,6 @@ public class KidzeeModel {
         ImageUri = imageUri;
         OrgName = orgName;
     }
-
     public String getImageUri() {
         return ImageUri;
     }

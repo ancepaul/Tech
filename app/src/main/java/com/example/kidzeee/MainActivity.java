@@ -78,6 +78,9 @@ public class MainActivity extends AppCompatActivity {
                 {
                     try
                     {
+                        findViewById(R.id.tick).setVisibility(View.INVISIBLE);
+                        findViewById(R.id.tick_card).setVisibility(View.INVISIBLE);
+
                         CurrentItem++;
                         Glide.with(getApplicationContext()).load(KidzeeList.get(CurrentItem).getImageUri()).into(SingleItemImageView);
 
@@ -161,6 +164,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void LoadFirstItem() {
+
+
+           findViewById(R.id.tick).setVisibility(View.INVISIBLE);
+           findViewById(R.id.tick_card).setVisibility(View.INVISIBLE);
            Glide.with(getApplicationContext()).load(KidzeeList.get(CurrentItem).getImageUri()).into(SingleItemImageView);
 
            singleKidzeeAdapter = new SingleKidzeeAdapter(KidzeeList.get(CurrentItem).getOrgName(),GenerateRandomString(KidzeeList.get(CurrentItem).getOrgName()));
@@ -309,6 +316,10 @@ public class MainActivity extends AppCompatActivity {
                         SingleItemJumbledRecyclerView.setAnimation(AnimationUtils.loadAnimation(getApplicationContext(),android.R.anim.fade_out));
                         SingleItemJumbledRecyclerView.getAnimation().start();
                         SingleItemJumbledRecyclerView.setVisibility(View.INVISIBLE);
+                        findViewById(R.id.tick).setVisibility(View.VISIBLE);
+                        findViewById(R.id.tick_card).setVisibility(View.VISIBLE);
+
+
                     }
 
 
